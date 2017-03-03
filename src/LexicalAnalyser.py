@@ -69,184 +69,189 @@ class Lexer:
                 self.s_source_program = s_source_program
                 self.i_index = -1
         
-        def nextToken(self):
-            c = ''
-            while c == '' or c == ' ' or c == '\n' or c == '\t':
+        def returnToken(self):
+            c = self.__nextChar()
+            letter_match = re.search("[_a-zA-Z]", c)
+            if letter_match:
+                l_token = [c]
                 c = self.__nextChar()
-                letter_match = re.search("[_a-zA-Z]", c)
-                if letter_match:
-                    l_token = [c]
+                ## Determine all alphanumeric characters in token
+                alphanumeric_match = re.search("[_a-zA-Z0-9]",c)
+                while alphanumeric_match:
+                    l_token.append(c)
                     c = self.__nextChar()
-                    ## Determine all alphanumeric characters in token
                     alphanumeric_match = re.search("[_a-zA-Z0-9]",c)
-                    while alphanumeric_match:
-                        l_token.append(c)
-                        c = self.__nextChar()
-                        alphanumeric_match = re.search("[_a-zA-Z0-9]",c)
-                    c = self.__backupChar()
-                    s_token = "".join(l_token)
-                    ## Determine if s_token is a reserved word
-                    if self.__isReservedWord(s_token): return (s_token,s_token,self.i_line_number)
-                    return ("id",s_token,self.i_line_number)
-                ## Determine if c is a number
-                number_match = re.search("[1-9]",c)
-                if number_match:
-                    l_token = [c]
+                c = self.__backupChar()
+                s_token = "".join(l_token)
+                ## Determine if s_token is a reserved word
+                if self.__isReservedWord(s_token): return (s_token,s_token,self.i_line_number)
+                return ("id",s_token,self.i_line_number)
+            ## Determine if c is a number
+            number_match = re.search("[1-9]",c)
+            if number_match:
+                l_token = [c]
+                c = self.__nextChar()
+                ## Determine if there are any numbers after initial
+                ## number
+                number_match = re.search("[0-9]",c)
+                while number_match:
+                    l_token.append(c)
                     c = self.__nextChar()
-                    ## Determine if there are any numbers after initial
-                    ## number
                     number_match = re.search("[0-9]",c)
+                ## Determine if there is a fraction. If not return
+                ## token as a digit
+                if c == ".":
+                    c_ahead = self.__lookAhead()
+                    number_match = re.search("[0-9]",c_ahead)
+                    if not number_match:
+                        c = self.__backupChar()
+                        s_token = "".join(l_token)
+                        return ("integer",s_token,self.i_line_number)
                     while number_match:
                         l_token.append(c)
                         c = self.__nextChar()
                         number_match = re.search("[0-9]",c)
-                    ## Determine if there is a fraction. If not return
-                    ## token as a digit
-                    if c == ".":
-                        c_ahead = self.__lookAhead()
-                        number_match = re.search("[0-9]",c_ahead)
-                        if not number_match:
-                            c = self.__backupChar()
-                            s_token = "".join(l_token)
-                            return ("integer",s_token,self.i_line_number)
-                        while number_match:
-                            l_token.append(c)
-                            c = self.__nextChar()
-                            number_match = re.search("[0-9]",c)
-                        while l_token[-1] == '0':
-                            c = self.__backupChar()
-                            l_token.pop()
-                        if c == '0':
-                            l_token.append(c)
-                        else: c = self.__backupChar()
-                        s_token = "".join(l_token)
-                        return ("float_num", s_token,self.i_line_number)
-                    c = self.__backupChar()
+                    while l_token[-1] == '0':
+                        c = self.__backupChar()
+                        l_token.pop()
+                    if c == '0':
+                        l_token.append(c)
+                    else: c = self.__backupChar()
                     s_token = "".join(l_token)
-                    return ("integer", s_token,self.i_line_number)
-                ## Determine if c is the number 0 or if it is the beginning
-                ## of a float
-                if c == '0':
-                    l_token = [c]
-                    c = self.__nextChar()
-                    if c == ".":
-                        c_ahead = self.__lookAhead()
-                        if re.search("[0-9]",c_ahead):
-                            l_token.append(c)
-                            c = self.__nextChar()
-                            while re.search('[1-9]',c):
-                                l_token.append(c)
-                                c = self.__nextChar()
-                            while l_token[-1] == '0':
-                                self.__backupChar()
-                                l_token.pop()
-                            if c == '0': l_token.append(c)
-                            else: self.__backupChar()
-                            s_token = "".join(l_token)
-                            return("float_num",s_token,self.i_line_number)
-                    c = self.__backupChar()
-                    return ("integer",c,self.i_line_number)
-
-                ## If c is a period, determine if it is the
-                ##beginning of a fraction or a stand-alone punctuation mark
+                    return ("float_num", s_token,self.i_line_number)
+                c = self.__backupChar()
+                s_token = "".join(l_token)
+                return ("integer", s_token,self.i_line_number)
+            ## Determine if c is the number 0 or if it is the beginning
+            ## of a float
+            if c == '0':
+                l_token = [c]
+                c = self.__nextChar()
                 if c == ".":
-                    l_token = [c]
-                    c = self.__nextChar()
-                    if re.search("[0-9]",c):
+                    c_ahead = self.__lookAhead()
+                    if re.search("[0-9]",c_ahead):
                         l_token.append(c)
                         c = self.__nextChar()
-                        while re.search("[0-9]",c):
+                        while re.search('[1-9]',c):
                             l_token.append(c)
                             c = self.__nextChar()
-                        c = self.__backupChar()
+                        while l_token[-1] == '0':
+                            self.__backupChar()
+                            l_token.pop()
+                        if c == '0': l_token.append(c)
+                        else: self.__backupChar()
                         s_token = "".join(l_token)
-                        return ("FRAC", s_token,self.i_line_number)
-                    c = self.__backupChar()
-                    return (".", c,self.i_line_number)
+                        return("float_num",s_token,self.i_line_number)
+                c = self.__backupChar()
+                return ("integer",c,self.i_line_number)
 
-                ## Determine if c is any punctuation mark of
-                ## the following: ; : ,
-                if c == ",": return (",", c,self.i_line_number)
-                if c == ";": return (";", c,self.i_line_number)
-                if c == ":": return (":", c,self.i_line_number)
-
-                ## Determine if c is one of the following
-                ## operators: +, -, *
-                if c == "+":
-                    return ("+", c,self.i_line_number)
-
-                if c == "-":
-                    return ("-", c,self.i_line_number)
-
-                if c == "*":
-                    return ("*", c,self.i_line_number)
-
-                # Determine if c is the operator = or if it
-                # is a part of the assign operator ==
-                if c == "=":
+            ## If c is a period, determine if it is the
+            ##beginning of a fraction or a stand-alone punctuation mark
+            if c == ".":
+                l_token = [c]
+                c = self.__nextChar()
+                if re.search("[0-9]",c):
+                    l_token.append(c)
                     c = self.__nextChar()
-                    if c == "=": return ("==", "==",self.i_line_number)
-                    c = self.__backupChar()
-                    return ("=", "=",self.i_line_number)
-
-                ## Determine if a character is the operator < or if it
-                ## is a part of either the operator <= or <>
-                if c == "<":
-                    c = self.__nextChar()
-                    if c == "=": return ("<=", "<=",self.i_line_number)
-                    elif c == ">": return ("<>", "<>",self.i_line_number)
-                    else:
-                        c = self.__backupChar()
-                        return ("<",c,self.i_line_number)
-                ## Determine if c is the operator > or if it
-                ## is a part of the operator >=
-                if c == ">":
-                    c = self.__nextChar()
-                    if c == "=": return (">=", ">=",self.i_line_number)
-                    c = self.__backupChar()
-                    return (">", ">",self.i_line_number)
-
-                ## Determine if c is the division operator / or
-                ## if it is a part of a comment marker /* or //
-                if c == "/":
-                    c_ahead = self.__lookAhead()
-                    if c_ahead == "/":
-                        while not c == "\n" and self.i_index < len(self.s_source_program):
-                            c = self.__nextChar()
-                    elif c_ahead == "*":
+                    while re.search("[0-9]",c):
+                        l_token.append(c)
                         c = self.__nextChar()
-                        b_comment_block = True
-                        while b_comment_block:
-                            c = self.__nextChar()
-                            if c == "*":
-                                c = self.__nextChar()
-                                if c == "/":
-                                    b_comment_block = False
-                            if self.i_index >= len(self.s_source_program):
-                                b_comment_block = False
-                    elif not c_ahead == "/" or not c_ahead == "*":
-                        return ("/", "/", self.i_line_number)
+                    c = self.__backupChar()
+                    s_token = "".join(l_token)
+                    return ("FRAC", s_token,self.i_line_number)
+                c = self.__backupChar()
+                return (".", c,self.i_line_number)
 
-                ## Determine if c is a parenthesis, a curly bracket,
-                ## or a bracket
-                if c == "(": return ("(", c,self.i_line_number)
-                if c == "{": return ("{", c,self.i_line_number)
-                if c == "[": return ("[", c,self.i_line_number)
+            ## Determine if c is any punctuation mark of
+            ## the following: ; : ,
+            if c == ",": return (",", c,self.i_line_number)
+            if c == ";": return (";", c,self.i_line_number)
+            if c == ":": return (":", c,self.i_line_number)
 
-                if c == ")": return (")", c,self.i_line_number)
-                if c == "}": return ("}", c,self.i_line_number)
-                if c == "]": return ("]", c,self.i_line_number)
+            ## Determine if c is one of the following
+            ## operators: +, -, *
+            if c == "+":
+                return ("+", c,self.i_line_number)
 
-                ## Determine if c is a line break, whitespace or tab
-                if c == '\n': 
-                    self.i_line_number+= 1
-                    # return('WHITE_SPACE', '\n',self.i_line_number)
-                # if c == ' ': pass
-                # if c == '\t': pass
-                ## Determine if c is an illegal character
+            if c == "-":
+                return ("-", c,self.i_line_number)
+
+            if c == "*":
+                return ("*", c,self.i_line_number)
+
+            # Determine if c is the operator = or if it
+            # is a part of the assign operator ==
+            if c == "=":
+                c = self.__nextChar()
+                if c == "=": return ("==", "==",self.i_line_number)
+                c = self.__backupChar()
+                return ("=", "=",self.i_line_number)
+
+            ## Determine if a character is the operator < or if it
+            ## is a part of either the operator <= or <>
+            if c == "<":
+                c = self.__nextChar()
+                if c == "=": return ("<=", "<=",self.i_line_number)
+                elif c == ">": return ("<>", "<>",self.i_line_number)
                 else:
-                    self.__logError(c)
+                    c = self.__backupChar()
+                    return ("<",c,self.i_line_number)
+            ## Determine if c is the operator > or if it
+            ## is a part of the operator >=
+            if c == ">":
+                c = self.__nextChar()
+                if c == "=": return (">=", ">=",self.i_line_number)
+                c = self.__backupChar()
+                return (">", ">",self.i_line_number)
 
+            ## Determine if c is the division operator / or
+            ## if it is a part of a comment marker /* or //
+            if c == "/":
+                c_ahead = self.__lookAhead()
+                if c_ahead == "/":
+                    while not c == "\n" and self.i_index < len(self.s_source_program):
+                        c = self.__nextChar()
+                elif c_ahead == "*":
+                    c = self.__nextChar()
+                    b_comment_block = True
+                    while b_comment_block:
+                        c = self.__nextChar()
+                        if c == "*":
+                            c = self.__nextChar()
+                            if c == "/":
+                                b_comment_block = False
+                        if self.i_index >= len(self.s_source_program):
+                            b_comment_block = False
+                elif not c_ahead == "/" or not c_ahead == "*":
+                    return ("/", "/", self.i_line_number)
+
+            ## Determine if c is a parenthesis, a curly bracket,
+            ## or a bracket
+            if c == "(": return ("(", c,self.i_line_number)
+            if c == "{": return ("{", c,self.i_line_number)
+            if c == "[": return ("[", c,self.i_line_number)
+
+            if c == ")": return (")", c,self.i_line_number)
+            if c == "}": return ("}", c,self.i_line_number)
+            if c == "]": return ("]", c,self.i_line_number)
+
+            ## Determine if c is a line break, whitespace or tab
+            if c == '\n': 
+                self.i_line_number+= 1
+                # return('WHITE_SPACE', '\n',self.i_line_number)
+            # if c == ' ': pass
+            # if c == '\t': pass
+            ## Determine if c is an illegal character
+            else:
+                self.__logError(c)
+
+        def nextToken(self):
+            n = 0
+            token = self.returnToken()
+            while token == None and n < len(self.s_source_program):
+                token = self.returnToken()
+                n+=1
+            return token
             ###############################################
             ########### End Lexer implementation ##########
             ###############################################
