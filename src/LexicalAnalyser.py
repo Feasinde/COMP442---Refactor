@@ -69,7 +69,7 @@ class Lexer:
                 self.s_source_program = s_source_program
                 self.i_index = -1
         
-        def returnToken(self):
+        def readToken(self):
             c = self.__nextChar()
             letter_match = re.search("[_a-zA-Z]", c)
             if letter_match:
@@ -238,19 +238,23 @@ class Lexer:
             ## Determine if c is a line break, whitespace or tab
             if c == '\n': 
                 self.i_line_number+= 1
-                # return('WHITE_SPACE', '\n',self.i_line_number)
-            # if c == ' ': pass
-            # if c == '\t': pass
+                return 'WHITE_SPACE'
+            if c == ' ': return 'WHITE_SPACE'
+            if c == '\t': return 'WHITE_SPACE'
+
+            ## Determine if c is the empty string and thus EOF
+            if c == '': return '$'
+
             ## Determine if c is an illegal character
-            else:
+            illegal_match = re.search('.',c)
+            if illegal_match:
                 self.__logError(c)
+                return 'WHITE_SPACE'
 
         def nextToken(self):
-            n = 0
-            token = self.returnToken()
-            while token == None and n < len(self.s_source_program):
-                token = self.returnToken()
-                n+=1
+            token = self.readToken()
+            while token == 'WHITE_SPACE':
+                token = self.readToken()
             return token
             ###############################################
             ########### End Lexer implementation ##########
