@@ -222,6 +222,7 @@ class Lexer:
                                 b_comment_block = False
                         if self.i_index >= len(self.s_source_program):
                             b_comment_block = False
+                    return 'WHITE_SPACE'
                 elif not c_ahead == "/" or not c_ahead == "*":
                     return ("/", "/", self.i_line_number)
 
@@ -243,7 +244,7 @@ class Lexer:
             if c == '\t': return 'WHITE_SPACE'
 
             ## Determine if c is the empty string and thus EOF
-            if c == '': return '$'
+            if c == '': return ('$','$',self.i_line_number)
 
             ## Determine if c is an illegal character
             illegal_match = re.search('.',c)

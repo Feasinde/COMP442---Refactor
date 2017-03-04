@@ -131,7 +131,8 @@ terminals = [
 'integer','int','float', 'float_num',
 '=','==','<>','<','>','<=','>=',
 'and','or',
-'*','/'
+'*','/',
+'$'
 ]
 
 ## Function that returns a filled parse table
@@ -152,3 +153,9 @@ def getParseTable():
 					if t2 in rule._follow:
 						parse_table[rule._symbol][t2] = rule
 	return parse_table
+
+def getRules():
+	return rulz
+
+def getTerminals():
+	return terminals
