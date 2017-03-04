@@ -25,17 +25,20 @@ class Parser:
 		for i in range(length_of_production):
 			self._push(rule._production[-i-1])
 
-	def skipErrors(self,error_token,rule):
-		lookahead = error_token[0]
-		error_line = error_token[2]
-		print('Syntax error at line',error_line)
-		if lookahead == '$' or lookahead in rule._follow:
-			self._pop()
-		# while lookahead not in rule._first or ('EPSILON' in rule._first and lookahead not in rule._follow):
-		for i in range(20):
-			token = self._tokeniser.nextToken()
-			print('lookahead =',lookahead,'Symbol = ',rule._symbol,'FIRST = ',rule._first,'FOLLOW =',rule._follow)
-			lookahead = token[0]		
+	## Auxiliary methods that returns the First and Follow sets
+	def getFirst(self, symbol):
+		first_ = []
+		first = set(first_)
+		for i in self._table[symbol]:
+			first = first.union(self._table[symbol][i]._first)
+		return first
+
+	def getFollow(self, symbol):
+		first_ = []
+		first = set(first_)
+		for i in self._table[symbol]:
+			first = first.union(self._table[symbol][i]._follow)
+		return first	
 	
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
@@ -47,9 +50,9 @@ class Parser:
 		## push first production rule into stack
 		self._push(self._rulz[0]._symbol)
 		rule_x = self._rulz[0]
-
 		token = self._tokeniser.nextToken()
 		a = token[0]
+		line_errors = []
 		while self._top() != '$':
 			x = self._top()
 			if x in self._terminals:
@@ -58,7 +61,15 @@ class Parser:
 					token = self._tokeniser.nextToken()
 					a = token[0]
 				else:
-					self.skipErrors(token,rule_x)
+					line_errors.append(token[2])
+					## Begin skip error section
+					if a == '$' or a in self.getFollow(self._top()):
+						self._pop()
+					else:
+						while a not in self.getFirst(self._top()) or a in self.getFollow(self._top()):
+							token = self._tokeniser.nextToken()
+							a = token[0]
+					## End skip error section
 					error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
 			else:
@@ -67,9 +78,18 @@ class Parser:
 					self._pop()
 					self._inverse_RHS_multiple_push(rule_x)
 				except KeyError:
-					self.skipErrors(token,rule_x)
+					line_errors.append(token[2])
+					## Begin skip error section
+					if a == '$' or a in self.getFollow(self._top()):
+						self._pop()
+					else:
+						while a not in self.getFirst(self._top()) or a in self.getFollow(self._top()):
+							token = self._tokeniser.nextToken()
+							a = token[0]
+					## End skip error section
 					error = True
 			if print_stack != False: print(self._stack)
 		if a != '$' or error == True:
-			print('Something went wrong')
+			print('Something went wrong.')
+			print('Syntax error on lines',str(line_errors))
 		else: print('EVERYTHING IS AWESOME')
