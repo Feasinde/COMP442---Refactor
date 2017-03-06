@@ -83,7 +83,7 @@ class Parser:
 					if a == '$' or a in self.getFollow(self._top()):
 						self._pop()
 					else:
-						while a not in self.getFirst(self._top()) or a in self.getFollow(self._top()):
+						while (a not in self.getFirst(self._top()) or a in self.getFollow(self._top())) and a != '$':
 							token = self._tokeniser.nextToken()
 							a = token[0]
 					## End skip error section

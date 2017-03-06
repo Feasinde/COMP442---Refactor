@@ -40,7 +40,8 @@ program {
 	};
 	/* comment */
 	maxValue = utility.findMax(sample);
-	minValue = utility.findMin(sample);
+	minValue = utility.findMin(sample); // moar comments
+	/* SUPER DUPER MEGA COMMENT BLOCK IN UR BASE KILLING UR TOKENZ*/
 	utility. var1[4][1][0][0][0][0][0] = 10;
 	arrayUtility[1][1][1][1].var1[4][1][0][0][0][0][0] = 2;
 	put(maxValue);
