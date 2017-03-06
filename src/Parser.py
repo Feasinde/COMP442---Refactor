@@ -61,6 +61,7 @@ class Parser:
 					token = self._tokeniser.nextToken()
 					a = token[0]
 				else:
+					print(x,a)
 					line_errors.append(token[2])
 					## Begin skip error section
 					if a == '$' or a in self.getFollow(self._top()):
