@@ -242,6 +242,7 @@ class Lexer:
                 return 'WHITE_SPACE'
             if c == ' ': return 'WHITE_SPACE'
             if c == '\t': return 'WHITE_SPACE'
+            if c == '\r': return 'WHITE_SPACE'
 
             ## Determine if c is the empty string and thus EOF
             if c == '': return ('$','$',self.i_line_number)
@@ -249,6 +250,7 @@ class Lexer:
             ## Determine if c is an illegal character
             illegal_match = re.search('.',c)
             if illegal_match:
+                print('Illegal character!',c)
                 self.__logError(c)
                 return 'WHITE_SPACE'
 
