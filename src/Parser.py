@@ -27,6 +27,7 @@ class Parser:
 
 	## Auxiliary methods that returns the First and Follow sets
 	def getFirst(self, symbol):
+		if symbol in self._terminals: return set([symbol])
 		first_ = []
 		first = set(first_)
 		for i in self._table[symbol]:
@@ -34,6 +35,7 @@ class Parser:
 		return first
 
 	def getFollow(self, symbol):
+		if symbol in self._terminals: return set([])
 		first_ = []
 		first = set(first_)
 		for i in self._table[symbol]:

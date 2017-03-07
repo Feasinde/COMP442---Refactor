@@ -32,7 +32,6 @@ program {
 	int idx;
 	int maxValue;
 	int minValue;
-	fdsfd
 	Utility utility;
 	Utility arrayUtility[2][3][6][7];
 	for(int t = 0; t<=100 ; t = t + 1) {
