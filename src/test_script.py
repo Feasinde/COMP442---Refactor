@@ -5,11 +5,11 @@ from Parser import Parser
 with open('code_sample_from_assignment.txt') as file:
 	input_string = file.read()
 
-tokeniser = Lexer(input_string)
-token = tokeniser.nextToken()
-while token[0] != '$':
-	print(token)
-	token = tokeniser.nextToken()
+# tokeniser = Lexer(input_string)
+# token = tokeniser.nextToken()
+# while token[0] != '$':
+# 	print(token)
+# 	token = tokeniser.nextToken()
 
 # parse_table = getParseTable()
 # rulz = getRules()
@@ -18,3 +18,7 @@ while token[0] != '$':
 
 # parser = Parser(rulz, terminals, parse_table, input_string)
 # parser._parse(print_stack=True)
+
+table = SymbolTable()
+table.addSymbol('f1', 'function', ['float','int[2][2]', 'float'])
+print(table.symbols['f1']['type'])

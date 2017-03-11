@@ -1,3 +1,18 @@
+## Create SymbolTable class
+
+class SymbolTable():
+	## A symbol table contains a list of symbols, each of which is a
+	## dictionary of dictionaries that constitute the table.
+	symbols = {}
+	def addSymbol(self,_name,_kind,_type,_link=None):
+		self.symbols[_name] = {}
+		self.symbols[_name]['kind'] = _kind
+
+		## if the symbol represents a function, type is a list
+		## where the first element is the return type and all
+		## subsequent elements are the parameter types
+		self.symbols[_name]['type'] = _type
+
 ## Create rule object
 
 class Rule:
