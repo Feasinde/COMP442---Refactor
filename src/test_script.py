@@ -19,6 +19,8 @@ with open('code_sample_from_assignment.txt') as file:
 # parser = Parser(rulz, terminals, parse_table, input_string)
 # parser._parse(print_stack=True)
 
-table = SymbolTable()
-table.addSymbol('f1', 'function', ['float','int[2][2]', 'float'])
-print(table.symbols['f1']['type'])
+# table = SymbolTable()
+# table.addSymbol('f1', 'function', ['float','int[2][2]', 'float'])
+# table.addSymbol('f2', 'function', ['float'])
+# table.addSymbol('class2', 'class', None)
+# print(table.printTable())
