@@ -1,4 +1,5 @@
 from LexicalAnalyser import Lexer
+from ParseTable import Directive
 
 class Parser:
 	def __init__(self, rulz, terminals, parse_table, input_string=''):
@@ -75,6 +76,10 @@ class Parser:
 					## End skip error section
 					error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
+			elif type(x) == Directive: 
+				print(x.name)
+				self._pop()
+
 			else:
 				try:
 					rule_x = self._table[x][a]
