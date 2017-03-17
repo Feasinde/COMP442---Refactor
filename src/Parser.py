@@ -1,7 +1,9 @@
 from LexicalAnalyser import Lexer
-from ParseTable import Directive
+from ParseTable import Directive, SymbolTable
 
 class Parser:
+	symbol_tables = []
+	scope_stack = []
 	def __init__(self, rulz, terminals, parse_table, input_string=''):
 		self._stack = ['$']
 		self._rulz = rulz
@@ -43,6 +45,22 @@ class Parser:
 			first = first.union(self._table[symbol][i]._follow)
 		return first	
 	
+	## Create and handle symbol tables
+	def handleSymbolTable(self,directive):
+		if directive.name == 'CREATE_GLOBAL_TABLE':
+			self.scope_stack.append('global')
+			global_table = SymbolTable()
+			self.symbol_tables.append(global_table)
+		elif directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
+			self.scope_stack.append('class_placeholder')
+			class_placeholder = SymbolTable
+			self.symbol_tables.append(class_placeholder)
+		elif directive.name == 'CLOSE_SCOPE' and self.scope_stack != []:
+			self.scope_stack.pop()
+		# print(self.scope_stack)
+		# print(directive)
+		print(self.symbol_tables)
+
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
 		self._tokeniser = Lexer(self._input)
@@ -77,7 +95,7 @@ class Parser:
 					error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
 			elif type(x) == Directive: 
-				print(x.name)
+				self.handleSymbolTable(x)
 				self._pop()
 
 			else:
