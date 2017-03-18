@@ -1,0 +1,68 @@
+prog -> N1 progBody
+classDecl -> class id { A1 } ;
+progBody -> program funcBody ; N3
+funcHead -> type id ( fParams )
+funcDef -> funcHead funcBody ;
+funcBody -> { A4 }
+statement -> assignStat ;
+| if ( expr ) then statBlock else statBlock ;
+| for ( type id assignOp expr ; relExpr ; assignStat ) statBlock ;
+| get ( variable ) ;
+| put ( expr ) ;
+| return ( expr ) ;
+assignStat -> variable assignOp expr
+statBlock -> { N4 } | statement | EPSILON
+expr -> arithExpr L1
+relExpr -> arithExpr relOp arithExpr
+arithExpr -> term L2
+sign -> + | -
+term -> factor L3
+factor -> A8 L4
+| num
+| ( arithExpr )
+| not factor
+| sign factor
+variable -> A8
+idnest -> id N7 .
+indice -> [ arithExpr ]
+arraySize -> [ integer ]
+type -> int | float | id
+fParams -> type id N5 N8 | EPSILON
+aParams -> expr N9 | EPSILON
+fParamsTail -> , type id N5+
+aParamsTail -> , expr
+assignOp -> =
+relOp -> == | <> | < | > | <= | >=
+addOp -> + | - | or
+multOp -> * | / | and
+
+N1 -> classDecl N1 | EPSILON
+N2 -> varDecl N2 | EPSILON
+N3 -> funcDef N3 | EPSILON
+N4 -> statement N4 | EPSILON
+N5 -> arraySize N5 | EPSILON
+N6 -> idnest N6 | EPSILON
+N7 -> indice N7 
+N8 -> fParamsTail N8
+N9 -> aParamsTail N9
+
+L1 -> relOp arithExpr | EPSILON
+L2 -> addOp term L2 | EPSILON
+L3 -> multOp factor L3 | EPSILON
+L4 -> ( aParams ) | EPSILON
+
+A1 -> A2 A1 | EPSILON
+A2 -> type id A3
+A3 -> ( fParams ) | N5 
+A4 -> A5 A4 | EPSILON
+A5 -> id A6 | A7
+A6 -> id N5 | A9 assignOp expr
+A8 -> id A9
+A9 -> N7 A9 | . A8 | EPSILON
+A7 -> A10 id N5
+| if ( expr ) then statBlock else statBlock ;
+| for ( type id assignOp expr ; relExpr ; assignStat ) statBlock ;
+| get ( variable ) ;
+| put ( expr ) ;
+| return ( expr ) ;
+A10 -> int | float

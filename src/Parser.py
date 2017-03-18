@@ -59,7 +59,7 @@ class Parser:
 			self.scope_stack.pop()
 		# print(self.scope_stack)
 		# print(directive)
-		print(self.symbol_tables)
+		# print(self.symbol_tables)
 
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
