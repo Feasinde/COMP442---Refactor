@@ -17,7 +17,7 @@ class SymbolTable():
 	## dictionary of dictionaries where the keys are the kind and 
 	## type of the symbol
 	symbols = {}
-	def addSymbol(self,_name,_kind,_type,_link=None):
+	def addSymbol(self,_name,_kind,_type=None,_link=None):
 		self.symbols[_name] = {}
 		self.symbols[_name]['kind'] = _kind
 
@@ -43,10 +43,10 @@ class Rule:
 
 rulz = []
 rulz.append(Rule({'class', 'program'}, {}, 'prog', [Directive.CREATE_GLOBAL_TABLE, 'N1', 'progBody']))
-rulz.append(Rule({'class'}, {}, 'classDecl', ['class', 'id', Directive.CREATE_CLASS_ENTRY_AND_TABLE, '{', 'A1', '}', ';',Directive.CLOSE_SCOPE]))
+rulz.append(Rule({'class'}, {}, 'classDecl', ['class','id', Directive.CREATE_CLASS_ENTRY_AND_TABLE, '{', 'A1', '}', ';',Directive.CLOSE_SCOPE]))
 rulz.append(Rule({'program'},{}, 'progBody', ['program', Directive.CREATE_PROGRAM_TABLE, 'funcBody', ';',Directive.CLOSE_SCOPE, 'N3']))
 rulz.append(Rule({'float', 'id', 'int'}, {}, 'funcHead', ['type', 'id', '(', 'fParams', ')']))
-rulz.append(Rule({'float', 'id', 'int'}, {}, 'funcDef', [Directive.CREATE_FUNCTION_ENTRY_AND_TABLE,'funcHead', 'funcBody',Directive.CLOSE_SCOPE]))
+rulz.append(Rule({'float', 'id', 'int'}, {}, 'funcDef', ['funcHead',Directive.CREATE_FUNCTION_ENTRY_AND_TABLE, 'funcBody',Directive.CLOSE_SCOPE]))
 rulz.append(Rule({'{'}, {}, 'funcBody', ['{', 'A4', '}']))
 rulz.append(Rule({'id'}, {}, 'statement', ['assignStat', ';']))
 rulz.append(Rule({'return'}, {}, 'statement',['return', '(', 'expr', ')', ';']))

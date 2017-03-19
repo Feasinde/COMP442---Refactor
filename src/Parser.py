@@ -1,3 +1,4 @@
+import re
 from LexicalAnalyser import Lexer
 from ParseTable import Directive, SymbolTable
 
@@ -46,20 +47,20 @@ class Parser:
 		return first	
 	
 	## Create and handle symbol tables
-	def handleSymbolTable(self,directive):
-		if directive.name == 'CREATE_GLOBAL_TABLE':
-			self.scope_stack.append('global')
-			global_table = SymbolTable()
-			self.symbol_tables.append(global_table)
-		elif directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
-			self.scope_stack.append('class_placeholder')
-			class_placeholder = SymbolTable
-			self.symbol_tables.append(class_placeholder)
-		elif directive.name == 'CLOSE_SCOPE' and self.scope_stack != []:
-			self.scope_stack.pop()
-		# print(self.scope_stack)
-		# print(directive)
-		# print(self.symbol_tables)
+	def handleSymbolTable(self,directive,symtable_entry):
+		print(symtable_entry)
+		# if directive.name == 'CREATE_GLOBAL_TABLE':
+		# 	global_table = SymbolTable()
+		# 	self.scope_stack.append(global_table)
+		# if directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
+		# 	self.scope_stack[-1].addSymbol(symtable_entry[0],symtable_entry[1])
+		# 	new_class = SymbolTable()
+		# 	self.scope_stack.append(new_class)
+		# if directive.name == 'CREATE_PROGRAM_TABLE':
+		# 	self.scope_stack[-1].addSymbol(symtable_entry[0],symtable_entry[1])
+		# 	program_table = SymbolTable()
+		# 	self.scope_stack.append(program_table)
+		# for i in self.scope_stack: print(i.symbols)
 
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
@@ -74,6 +75,12 @@ class Parser:
 		token = self._tokeniser.nextToken()
 		a = token[0]
 		line_errors = []
+
+		## string that stores each parsed token from which
+		## type name and array indices are extracted to create
+		## symtables
+		string_symtable = token[1]
+		
 		while self._top() != '$':
 			x = self._top()
 			if x in self._terminals:
@@ -81,9 +88,13 @@ class Parser:
 					self._pop()
 					token = self._tokeniser.nextToken()
 					a = token[0]
+
+					## add parsed token to string_symtable
+					string_symtable = string_symtable + ' '+token[1]
 				else:
 					print(x,a)
 					line_errors.append(token[2])
+					
 					## Begin skip error section
 					if a == '$' or a in self.getFollow(self._top()):
 						self._pop()
@@ -92,10 +103,19 @@ class Parser:
 							token = self._tokeniser.nextToken()
 							a = token[0]
 					## End skip error section
+					
 					error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
 			elif type(x) == Directive: 
-				self.handleSymbolTable(x)
+
+				## regex that captures the type, name, and array indices of variables and parameters
+				new_symtable_entry = re.findall('([A-Za-z0-9]*) [A-Za-z0-9]*.*$', string_symtable) + re.findall('[A-Za-z0-9]* ([A-Za-z0-9]*).*$', string_symtable) + re.findall('\[ ([0-9]*) \]', string_symtable)
+				self.handleSymbolTable(x,new_symtable_entry)
+
+				## reset string_symtable after capturing type, name, and array indices of latest symtable entry
+				string_symtable = ''
+
+				## pop directive from stack
 				self._pop()
 
 			else:
@@ -105,6 +125,7 @@ class Parser:
 					self._inverse_RHS_multiple_push(rule_x)
 				except KeyError:
 					line_errors.append(token[2])
+				
 					## Begin skip error section
 					if a == '$' or a in self.getFollow(self._top()):
 						self._pop()
@@ -113,6 +134,7 @@ class Parser:
 							token = self._tokeniser.nextToken()
 							a = token[0]
 					## End skip error section
+					
 					error = True
 			if print_stack != False: print(self._stack)
 		if a != '$' or error == True:
