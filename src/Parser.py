@@ -47,8 +47,8 @@ class Parser:
 		return first	
 	
 	## Create and handle symbol tables
-	def handleSymbolTable(self,directive,symtable_entry):
-		print(symtable_entry)
+	def handleSymbolTable(self,directive,symtable_entry): pass
+		# print(symtable_entry)
 		# if directive.name == 'CREATE_GLOBAL_TABLE':
 		# 	global_table = SymbolTable()
 		# 	self.scope_stack.append(global_table)
@@ -107,15 +107,10 @@ class Parser:
 					error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
 			elif type(x) == Directive: 
-
-				## regex that captures the type, name, and array indices of variables and parameters
-				new_symtable_entry = re.findall('([A-Za-z0-9]*) [A-Za-z0-9]*.*$', string_symtable) + re.findall('[A-Za-z0-9]* ([A-Za-z0-9]*).*$', string_symtable) + re.findall('\[ ([0-9]*) \]', string_symtable)
-				self.handleSymbolTable(x,new_symtable_entry)
-
-				## reset string_symtable after capturing type, name, and array indices of latest symtable entry
-				string_symtable = ''
-
-				## pop directive from stack
+				new_string_for_symtable = re.findall('[A-Za-z0-9]+',string_symtable)
+				print(string_symtable,x)
+				if x != Directive.CREATE_GLOBAL_TABLE and x != Directive.CLOSE_SCOPE: string_symtable = ''
+				
 				self._pop()
 
 			else:

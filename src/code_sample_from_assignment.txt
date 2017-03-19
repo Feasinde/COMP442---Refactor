@@ -33,6 +33,12 @@ class Utility {
 	};
 };
 
+class YetAnotherClass {
+	int var1;
+	int var2;
+	float var3;
+};
+
 program {
 	int sample[100];
 	int idx;
@@ -61,4 +67,4 @@ float randomize() {
 	return (value);
 };
 
-float emptyFunction(){};
+float emptyFunction(float ola_k_ase){};
