@@ -47,20 +47,21 @@ class Parser:
 		return first	
 	
 	## Create and handle symbol tables
-	def handleSymbolTable(self,directive,symtable_entry): pass
-		# print(symtable_entry)
-		# if directive.name == 'CREATE_GLOBAL_TABLE':
-		# 	global_table = SymbolTable()
-		# 	self.scope_stack.append(global_table)
-		# if directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
-		# 	self.scope_stack[-1].addSymbol(symtable_entry[0],symtable_entry[1])
-		# 	new_class = SymbolTable()
-		# 	self.scope_stack.append(new_class)
-		# if directive.name == 'CREATE_PROGRAM_TABLE':
-		# 	self.scope_stack[-1].addSymbol(symtable_entry[0],symtable_entry[1])
-		# 	program_table = SymbolTable()
-		# 	self.scope_stack.append(program_table)
-		# for i in self.scope_stack: print(i.symbols)
+	def handleSymbolTable(self,directive,table_info):
+		if directive.name == 'CREATE_GLOBAL_TABLE':
+			global_table = SymbolTable()
+			self.scope_stack.append(global_table)
+		elif directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
+			self.scope_stack[-1].addSymbol(table_info[0],'class')
+			class_table = SymbolTable()
+			self.scope_stack.append(class_table)
+		elif directive.name == 'CREATE_VARIABLE_ENTRY':
+			self.scope_stack[-1].addSymbol(table_info[1], 'variable', table_info[0]+str(table_info[2:]))
+		elif directive.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
+			print(table_info)
+			self.scope_stack[-1].addSymbol(table_info[1], 'function',table_info[0]+':'+table_info[2:])
+		elif directive.name == 'CLOSE_SCOPE':
+			self.symbol_tables.append(self.scope_stack.pop())
 
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
@@ -106,11 +107,19 @@ class Parser:
 					
 					error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
-			elif type(x) == Directive: 
-				new_string_for_symtable = re.findall('[A-Za-z0-9]+',string_symtable)
-				print(string_symtable,x)
+			elif type(x) == Directive:
+				symtable_parameters = []
+				if x.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
+					symtable_parameters = re.findall('class ([A-Za-z0-9]+) {',string_symtable)
+				if x.name == 'CREATE_PROGRAM_TABLE':
+					symtable_parameters = ['program']
+				if x.name == 'CREATE_VARIABLE_ENTRY':
+					symtable_parameters = re.findall('[A-Za-z0-9]+ [A-Za-z0-9]+',string_symtable)
+					symtable_parameters = symtable_parameters[0].split() + re.findall('\[(.*?)\]',string_symtable)
+				if x.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
+					symtable_parameters = re.findall('([A-Za-z0-9]+) ([A-Za-z0-9]+) \((.*)\)', string_symtable)
 				if x != Directive.CREATE_GLOBAL_TABLE and x != Directive.CLOSE_SCOPE: string_symtable = ''
-				
+				self.handleSymbolTable(x,symtable_parameters)
 				self._pop()
 
 			else:

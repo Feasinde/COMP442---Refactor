@@ -30,6 +30,10 @@ class Utility {
 		}else{};
 		};
 		return (minValue);
+
+	};
+	float findNothing(){
+
 	};
 };
 
@@ -67,4 +71,4 @@ float randomize() {
 	return (value);
 };
 
-float emptyFunction(float ola_k_ase){};
+float emptyFunction(int par1, float par2, Utility par3[10]){};
