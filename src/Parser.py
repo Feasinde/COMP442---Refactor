@@ -49,27 +49,39 @@ class Parser:
 	## Create and handle symbol tables
 	def handleSymbolTable(self,directive,table_info):
 		if directive.name == 'CREATE_GLOBAL_TABLE':
-			global_table = SymbolTable()
-			self.scope_stack.append(global_table)
+			self.scope_stack.append(SymbolTable('Global'))
+			self.symbol_tables.append(self.scope_stack[-1])
+			self.scope_stack[0].printTable()
 		elif directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
 			self.scope_stack[-1].addSymbol(table_info[0],'class')
-			class_table = SymbolTable()
-			self.scope_stack.append(class_table)
+			print('added symbol',table_info[0],'to',self.scope_stack[-1].name,'table')
+			self.scope_stack.append(SymbolTable(table_info[0]))
+			self.symbol_tables.append(self.scope_stack[-1])
+			self.scope_stack[0].printTable()
 		elif directive.name == 'CREATE_VARIABLE_ENTRY':
+			print('The scope is:',self.scope_stack[-1].name)
 			self.scope_stack[-1].addSymbol(table_info[1], 'variable', table_info[0]+str(table_info[1:]))
+			print('added symbol',table_info[1],'to',self.scope_stack[-1].name,'table')
+			self.scope_stack[0].printTable()
 		elif directive.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
 			self.scope_stack[-1].addSymbol(table_info[1], 'function', table_info[0]+str(table_info[1:]))
-			function_table = SymbolTable()
-			self.scope_stack.append(function_table)
+			print('added symbol',table_info[1],'to',self.scope_stack[-1].name,'table')
+			self.scope_stack.append(SymbolTable(table_info[1]))
+			self.symbol_tables.append(self.scope_stack[-1])
+			self.scope_stack[0].printTable()
 		elif directive.name == 'CREATE_PROGRAM_TABLE':
-			self.scope_stack[-1].addSymbol('program','program')
-			program_table = SymbolTable()
-			self.scope_stack.append(program_table)
+			self.scope_stack[-1].addSymbol('program','program',_link=self.scope_stack[-1])
+			print('added symbol',table_info[0],'to',self.scope_stack[-1].name,'table')
+			self.scope_stack.append(SymbolTable('Program'))
+			self.symbol_tables.append(self.scope_stack[-1])
+			self.scope_stack[0].printTable()
 		elif directive.name == 'CLOSE_SCOPE' and len(self.scope_stack) != 0:
-			self.symbol_tables.append(self.scope_stack.pop())
+			self.scope_stack.pop()
 
 	def printSymbolTables(self):
-		for i in self.symbol_tables: print(i.printTable())
+		print('These are the symbols of each symtable:')
+		for i in self.symbol_tables:
+			for j in i.symbols: print(j)
 
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
