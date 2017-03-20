@@ -56,12 +56,20 @@ class Parser:
 			class_table = SymbolTable()
 			self.scope_stack.append(class_table)
 		elif directive.name == 'CREATE_VARIABLE_ENTRY':
-			self.scope_stack[-1].addSymbol(table_info[1], 'variable', table_info[0]+str(table_info[2:]))
+			self.scope_stack[-1].addSymbol(table_info[1], 'variable', table_info[0]+str(table_info[1:]))
 		elif directive.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
-			print(table_info)
-			self.scope_stack[-1].addSymbol(table_info[1], 'function',table_info[0]+':'+table_info[2:])
-		elif directive.name == 'CLOSE_SCOPE':
+			self.scope_stack[-1].addSymbol(table_info[1], 'function', table_info[0]+str(table_info[1:]))
+			function_table = SymbolTable()
+			self.scope_stack.append(function_table)
+		elif directive.name == 'CREATE_PROGRAM_TABLE':
+			self.scope_stack[-1].addSymbol('program','program')
+			program_table = SymbolTable()
+			self.scope_stack.append(program_table)
+		elif directive.name == 'CLOSE_SCOPE' and len(self.scope_stack) != 0:
 			self.symbol_tables.append(self.scope_stack.pop())
+
+	def printSymbolTables(self):
+		for i in self.symbol_tables: print(i.printTable())
 
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
@@ -118,6 +126,7 @@ class Parser:
 					symtable_parameters = symtable_parameters[0].split() + re.findall('\[(.*?)\]',string_symtable)
 				if x.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
 					symtable_parameters = re.findall('([A-Za-z0-9]+) ([A-Za-z0-9]+) \((.*)\)', string_symtable)
+					symtable_parameters = symtable_parameters[0]
 				if x != Directive.CREATE_GLOBAL_TABLE and x != Directive.CLOSE_SCOPE: string_symtable = ''
 				self.handleSymbolTable(x,symtable_parameters)
 				self._pop()
