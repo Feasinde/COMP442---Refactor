@@ -1,8 +1,3 @@
-class AnotherClass {
-	int var1;
-	int var2;
-	int var3;
-};
 
 class Utility { 
 	int var1[4][5][7][8][9][1][0];
@@ -35,6 +30,12 @@ class Utility {
 	float findNothing(){
 
 	};
+};
+
+class AnotherClass {
+	int var1;
+	int var2;
+	int var3;
 };
 
 class YetAnotherClass {

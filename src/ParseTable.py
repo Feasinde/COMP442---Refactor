@@ -13,25 +13,18 @@ class Directive(Enum):
 
 class SymbolTable():
 	## A symbol table contains a list of symbols, each of which is a
-	## dictionary of dictionaries where the keys are the kind and 
-	## type of the symbol
+	## list of strings representing the information of the entry
+	symbols = []
+
 	def __init__(self,name_of_table):
 		self.name = name_of_table
-	symbols = {}
 	def addSymbol(self,_name,_kind,_type=None,_link=None):
-		self.symbols[_name] = {}
-		self.symbols[_name]['kind'] = _kind
-
-		## if the symbol represents a function, type is a list
-		## where the first element is the return type and all
-		## subsequent elements are the parameter types
-		self.symbols[_name]['type'] = _type
-		self.symbols[_name]['link'] = _link
+		self.symbols.append([_name, _kind, _type, _link])
 
 	def printTable(self):
 		print('---',self.name,'---------------------------------------------------')
 		for i in self.symbols:
-			print(i,'\t|\t',self.symbols[i]['kind'],'\t|\t',self.symbols[i]['type'])
+			print(i)
 		print('-------------------------------------------------------------------\n')
 
 ## Create rule object
@@ -46,7 +39,7 @@ class Rule:
 ## Add rules from the grammar
 
 rulz = []
-rulz.append(Rule({'class', 'program'}, {}, 'prog', [Directive.CREATE_GLOBAL_TABLE, 'N1', 'progBody']))
+rulz.append(Rule({'class', 'program'}, {}, 'prog', ['N1', 'progBody']))
 rulz.append(Rule({'class'}, {}, 'classDecl', ['class','id', Directive.CREATE_CLASS_ENTRY_AND_TABLE, '{', 'A1', '}',Directive.CLOSE_SCOPE, ';']))
 rulz.append(Rule({'program'},{}, 'progBody', ['program', Directive.CREATE_PROGRAM_TABLE, 'funcBody', ';',Directive.CLOSE_SCOPE, 'N3']))
 rulz.append(Rule({'float', 'id', 'int'}, {}, 'funcHead', ['type', 'id', '(', 'fParams', ')']))
