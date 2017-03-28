@@ -78,7 +78,9 @@ class Parser:
 		if directive.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
 			func_type = table_info.split()[0]
 			func_id = table_info.split()[1]
-			func_params = re.findall('\( .* \)',table_info)
+			func_params = re.findall('\( (.*) , (.*) \)',table_info)
+			if func_params != []:
+				func_params = list(func_params[0])
 			print(table_info)
 			print(func_params)
 
