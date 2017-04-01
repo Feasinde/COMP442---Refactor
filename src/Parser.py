@@ -52,48 +52,73 @@ class Parser:
 			self.semantic_stack.append(SymbolTable('Global'))
 			return False
 		if directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
-			pass
-
-		# 	self.semantic_stack[-1].addSymbol(class_name,'class')
-			# print(self.semantic_stack[-1])
-			# return False
+			class_name = self.semantic_stack.pop()
+			self.semantic_stack[-1].addSymbol(class_name,'class')
+			self.semantic_stack.append(SymbolTable(class_name))
+			return False
 		if directive.name == 'CREATE_PROGRAM_TABLE':
 			self.semantic_stack[-1].addSymbol('program','Main program')
-			self.semantic_stack[-1].printTable()
+			self.semantic_stack.append(SymbolTable('Program'))
 			return False
 		if directive.name == 'CAPTURE_TOKEN':
 			return True
-		# if directive.name == 'CAPTURE_ID':
-		# 	return True
-		# if directive.name == 'CAPTURE_DIMENSIONALITY':
-		# 	return True
-		# if directive.name == 'CREATE_VARIABLE_ENTRY':
-		# 	var_dim = []
-		# 	while self.semantic_stack[-1] == ']':
-		# 		self.semantic_stack.pop()
-		# 		var_dim.append(self.semantic_stack.pop())
-		# 		self.semantic_stack.pop()
-		# 	var_id = self.semantic_stack.pop()
-		# 	var_type = self.semantic_stack.pop()
-		# 	for i in range(len(var_dim)):
-		# 		var_dim[i] = '['+var_dim[i]+']'
-		# 	var_dim = ''.join(list(reversed(var_dim)))
-		# 	print(self.semantic_stack[-1])
-
-			# return False
+		if directive.name == 'CREATE_VARIABLE_ENTRY':
+			var_dim = []
+			while self.semantic_stack[-1] == ']':
+				self.semantic_stack.pop()
+				var_dim.append(self.semantic_stack.pop())
+				self.semantic_stack.pop()
+			var_id = self.semantic_stack.pop()
+			var_type = self.semantic_stack.pop()
+			for i in range(len(var_dim)):
+				var_dim[i] = '['+var_dim[i]+']'
+			var_dim = ''.join(list(reversed(var_dim)))
+			self.semantic_stack[-1].addSymbol(var_id,'variable',var_type+var_dim)
+			return False
+		if directive.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
+			func_params = []
+			while self.semantic_stack[-1] != '(':
+				self.semantic_stack.pop()
+				if self.semantic_stack[-1] != '(':
+					param_dim = []
+					while self.semantic_stack[-1] == ']':
+						self.semantic_stack.pop()
+						param_dim.append(self.semantic_stack.pop())
+						self.semantic_stack.pop()
+					param_id = self.semantic_stack.pop()
+					param_type = self.semantic_stack.pop()
+					for i in range(len(param_dim)):
+						param_dim[i] = '['+param_dim[i]+']'
+					param_dim = ''.join(list(reversed(param_dim)))
+					if param_dim != '':
+						func_params.append((param_type,param_id,param_dim))
+					else:
+						func_params.append((param_type,param_id))
+			self.semantic_stack.pop()
+			func_id = self.semantic_stack.pop()
+			func_type = self.semantic_stack.pop()
+			func_params = list(reversed(func_params))
+			if func_params != []:
+				self.semantic_stack[-1].addSymbol(func_id,'Function',func_type+':'+str(func_params))
+			else: self.semantic_stack[-1].addSymbol(func_id,'Function',func_type)
+			self.semantic_stack.append(SymbolTable(func_id))
+			if func_params != []:
+				for i in func_params: ## i is a tuple
+					if len(i) == 3:
+						self.semantic_stack[-1].addSymbol(i[1],'Parameter',i[0]+i[2])
+					else: self.semantic_stack[-1].addSymbol(i[1],'Parameter',i[0])
+			return False
+		if directive.name == 'POP_SEMANTIC_STACK':
+			self.semantic_stack.pop()
 
 		if directive.name == 'CLOSE_SCOPE':
-			# print('Ere we pop, this is the last element of self.semantic_stack:',self.semantic_stack[-1].name)
-			# print('POP goes the stack!')
 			self.symbol_tables.append(self.semantic_stack.pop())
-			# print('After poppin, this is the last element of self.semantic_stack:',self.semantic_stack[-1].name)
 		return False
 		## begin adding class symbol to current scope
 
 	def printSymbolTables(self):
-		print('These are the symbols of each symtable:')
-		for i in self.symbol_tables:
-			for j in i.symbols: print(j)
+		for i in range(len(self.symbol_tables)):
+			self.symbol_tables[-1-i].printTable()
 
 	def _parse(self,print_stack=False):
 		## Initialise tokeniser
@@ -172,4 +197,5 @@ class Parser:
 			print('Something went wrong.')
 			print('Syntax error on lines',str(line_errors))
 		else: 
+			self.printSymbolTables()
 			print('EVERYTHING IS AWESOME')

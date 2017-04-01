@@ -10,6 +10,7 @@ class Directive(Enum):
 	CLOSE_SCOPE = 7
 	CAPTURE_TOKEN = 8
 	CAPTURE_DIMENSIONALITY = 11
+	POP_SEMANTIC_STACK = 12
 
 ## Create SymbolTable class
 
@@ -42,10 +43,10 @@ class Rule:
 
 rulz = []
 rulz.append(Rule({'class', 'program'}, {}, 'prog', [Directive.CREATE_GLOBAL_TABLE, 'N1', 'progBody',Directive.CLOSE_SCOPE]))
-rulz.append(Rule({'class'}, {}, 'classDecl', ['class','id','{', 'A1', '}',';']))
-rulz.append(Rule({'program'},{}, 'progBody', ['program', Directive.CREATE_PROGRAM_TABLE,'funcBody', ';',Directive.CLOSE_SCOPE, 'N3']))
+rulz.append(Rule({'class'}, {}, 'classDecl', ['class',Directive.CAPTURE_TOKEN,'id',Directive.CREATE_CLASS_ENTRY_AND_TABLE,'{', 'A1', '}',Directive.CLOSE_SCOPE,';']))
+rulz.append(Rule({'program'},{}, 'progBody', ['program',Directive.CREATE_PROGRAM_TABLE,'funcBody',Directive.CLOSE_SCOPE, ';', 'N3']))
 rulz.append(Rule({'float', 'id', 'int'}, {}, 'funcHead', ['type', 'id', '(', 'fParams', ')']))
-rulz.append(Rule({'float', 'id', 'int'}, {}, 'funcDef', ['funcHead','funcBody']))
+rulz.append(Rule({'float', 'id', 'int'}, {}, 'funcDef', [Directive.CAPTURE_TOKEN,'funcHead',Directive.CREATE_FUNCTION_ENTRY_AND_TABLE,'funcBody',Directive.CLOSE_SCOPE]))
 rulz.append(Rule({'{'}, {}, 'funcBody', ['{', 'A4', '}']))
 rulz.append(Rule({'id'}, {}, 'statement', ['assignStat', ';']))
 rulz.append(Rule({'return'}, {}, 'statement',['return', '(', 'expr', ')', ';']))
@@ -117,19 +118,19 @@ rulz.append(Rule({'EPSILON'}, {';', ')', ',', '}', 'id', 'for', 'if', 'get', 'pu
 rulz.append(Rule({'('}, {}, 'L4', ['(', 'aParams', ')']))
 rulz.append(Rule({'EPSILON'}, {'}'}, 'A1', ['EPSILON']))
 rulz.append(Rule({'float', 'id', 'int'}, {}, 'A1', ['A2', 'A1']))
-rulz.append(Rule({'float', 'id', 'int'}, {}, 'A2',['type', 'id', 'A3']))
-rulz.append(Rule({'[', ';'}, {';'}, 'A3', ['N5', ';']))
-rulz.append(Rule({'('}, {}, 'A3', ['(', 'fParams', ')', 'funcBody', ';']))
+rulz.append(Rule({'float', 'id', 'int'}, {}, 'A2',[Directive.CAPTURE_TOKEN,'type', 'id', 'A3']))
+rulz.append(Rule({'[', ';'}, {';'}, 'A3', ['N5',Directive.CREATE_VARIABLE_ENTRY, ';']))
+rulz.append(Rule({'('}, {}, 'A3', ['(', 'fParams', ')',Directive.CREATE_FUNCTION_ENTRY_AND_TABLE, 'funcBody',Directive.CLOSE_SCOPE, ';']))
 rulz.append(Rule({'EPSILON'}, {'}'}, 'A4', ['EPSILON']))
 rulz.append(Rule({'id', 'for', 'if', 'get', 'put', 'return', 'float', 'int'}, {}, 'A4', ['A5', 'A4']))
 rulz.append(Rule({'for', 'if', 'get', 'put', 'return', 'float', 'int'}, {}, 'A5', ['A7']))
-rulz.append(Rule({'id'}, {}, 'A5',['id', 'A6']))
-rulz.append(Rule({'.', '[', '='}, {}, 'A6', ['N7', 'A9', 'assignOp', 'expr', ';']))
-rulz.append(Rule({'id'}, {}, 'A6',['id', 'N5', ';']))
+rulz.append(Rule({'id'}, {}, 'A5',[Directive.CAPTURE_TOKEN,'id', 'A6']))
+rulz.append(Rule({'.', '[', '='}, {}, 'A6', [Directive.POP_SEMANTIC_STACK,'N7', 'A9', 'assignOp', 'expr', ';']))
+rulz.append(Rule({'id'}, {}, 'A6',['id', 'N5', Directive.CREATE_VARIABLE_ENTRY,';']))
 rulz.append(Rule({'id'}, {}, 'A8', ['id', 'N7', 'A9']))
 rulz.append(Rule({'EPSILON'}, {'=', ';', ')', ',', '<', '<=', '<>', '==', '>', '>=', ']', '+', '-', 'or', '*', '/', 'and', '('}, 'A9',['EPSILON']))
 rulz.append(Rule({'.'}, {}, 'A9', ['.', 'A8']))
-rulz.append(Rule({'float', 'int'}, {}, 'A7',['A10', 'id', 'N5', ';']))
+rulz.append(Rule({'float', 'int'}, {}, 'A7',[Directive.CAPTURE_TOKEN, 'A10', 'id', 'N5',Directive.CREATE_VARIABLE_ENTRY, ';']))
 rulz.append(Rule({'return'}, {}, 'A7', ['return', '(', 'expr', ')', ';']))
 rulz.append(Rule({'put'}, {}, 'A7', ['put', '(', 'expr', ')', ';']))
 rulz.append(Rule({'get'}, {}, 'A7', ['get', '(', 'variable', ')', ';']))
