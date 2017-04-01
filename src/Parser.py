@@ -4,7 +4,7 @@ from ParseTable import Directive, SymbolTable
 
 class Parser:
 	symbol_tables = []
-	scope_stack = []
+	semantic_stack = []
 	def __init__(self, rulz, terminals, parse_table, input_string=''):
 		self._stack = ['$']
 		self._rulz = rulz
@@ -47,42 +47,48 @@ class Parser:
 		return first	
 	
 	## Create and handle symbol tables
-	def handleSymbolTable(self,directive,table_info):
-		## begin adding class symbol to current scope
+	def handleSymbolTable(self,directive):
+		if directive.name == 'CREATE_GLOBAL_TABLE':
+			self.semantic_stack.append(SymbolTable('Global'))
+			return False
 		if directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
-			class_id = table_info.split()[1]
-			current_class = SymbolTable(class_id)
-			self.scope_stack[-1].addSymbol(class_id,'class')
-			self.scope_stack.append(current_class)
-		
-		## begin adding program symbol to current scope,
-		## which should be the global scope
-		if directive.name == 'CREATE_PROGRAM_TABLE':
-			program_table = SymbolTable('Program')
-			self.scope_stack[-1].addSymbol('program', 'program')
-			self.scope_stack.append(program_table)
-		
-		## begin adding variable entry to current scope
-		if directive.name == 'CREATE_VARIABLE_ENTRY':
-			var_type = table_info.split()[0]
-			var_id = table_info.split()[1]
-			var_array_dimensions = re.findall('\[ ([0-9]) \]',table_info)
-			if var_array_dimensions != []:
-				var_dimensionality = ''
-				for i in var_array_dimensions:
-					var_dimensionality = var_dimensionality+'['+i+']'
-				var_type = var_type+var_dimensionality
-			self.scope_stack[-1].addSymbol(var_id, 'variable',var_type)
+			pass
 
-		## begin adding function entry to current scope
-		if directive.name == 'CREATE_FUNCTION_ENTRY_AND_TABLE':
-			func_type = table_info.split()[0]
-			func_id = table_info.split()[1]
-			func_params = re.findall('\( (.*) , (.*) \)',table_info)
-			if func_params != []:
-				func_params = list(func_params[0])
-			print(table_info)
-			print(func_params)
+		# 	self.semantic_stack[-1].addSymbol(class_name,'class')
+			# print(self.semantic_stack[-1])
+			# return False
+		if directive.name == 'CREATE_PROGRAM_TABLE':
+			self.semantic_stack[-1].addSymbol('program','Main program')
+			self.semantic_stack[-1].printTable()
+			return False
+		if directive.name == 'CAPTURE_TOKEN':
+			return True
+		# if directive.name == 'CAPTURE_ID':
+		# 	return True
+		# if directive.name == 'CAPTURE_DIMENSIONALITY':
+		# 	return True
+		# if directive.name == 'CREATE_VARIABLE_ENTRY':
+		# 	var_dim = []
+		# 	while self.semantic_stack[-1] == ']':
+		# 		self.semantic_stack.pop()
+		# 		var_dim.append(self.semantic_stack.pop())
+		# 		self.semantic_stack.pop()
+		# 	var_id = self.semantic_stack.pop()
+		# 	var_type = self.semantic_stack.pop()
+		# 	for i in range(len(var_dim)):
+		# 		var_dim[i] = '['+var_dim[i]+']'
+		# 	var_dim = ''.join(list(reversed(var_dim)))
+		# 	print(self.semantic_stack[-1])
+
+			# return False
+
+		if directive.name == 'CLOSE_SCOPE':
+			# print('Ere we pop, this is the last element of self.semantic_stack:',self.semantic_stack[-1].name)
+			# print('POP goes the stack!')
+			self.symbol_tables.append(self.semantic_stack.pop())
+			# print('After poppin, this is the last element of self.semantic_stack:',self.semantic_stack[-1].name)
+		return False
+		## begin adding class symbol to current scope
 
 	def printSymbolTables(self):
 		print('These are the symbols of each symtable:')
@@ -110,12 +116,14 @@ class Parser:
 
 		## create global symbol table and add to scope
 		## stack and symbol table list
-		self.scope_stack.append(SymbolTable('Global'))
+		capture_token = False
 		
 		while self._top() != '$':
 			x = self._top()
 			if x in self._terminals:
 				if x == a:
+					if capture_token: 
+						self.semantic_stack.append(token[1])
 					self._pop()
 					token = self._tokeniser.nextToken()
 					a = token[0]
@@ -138,8 +146,7 @@ class Parser:
 					error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
 			elif type(x) == Directive:
-				self.handleSymbolTable(x,string_symtable)
-				string_symtable = ''
+				capture_token = self.handleSymbolTable(x)
 				self._pop()
 
 			else:
@@ -164,4 +171,5 @@ class Parser:
 		if a != '$' or error == True:
 			print('Something went wrong.')
 			print('Syntax error on lines',str(line_errors))
-		else: print('EVERYTHING IS AWESOME')
+		else: 
+			print('EVERYTHING IS AWESOME')
