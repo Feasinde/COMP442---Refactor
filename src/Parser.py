@@ -53,8 +53,9 @@ class Parser:
 			return False
 		if directive.name == 'CREATE_CLASS_ENTRY_AND_TABLE':
 			class_name = self.semantic_stack.pop()
-			self.semantic_stack[-1].addSymbol(class_name,'class')
-			self.semantic_stack.append(SymbolTable(class_name))
+			new_class = SymbolTable(class_name)
+			self.semantic_stack[-1].addSymbol(class_name,'class',_link=new_class)
+			self.semantic_stack.append(new_class)
 			return False
 		if directive.name == 'CREATE_PROGRAM_TABLE':
 			self.semantic_stack[-1].addSymbol('program','Main program')
@@ -98,12 +99,13 @@ class Parser:
 			func_id = self.semantic_stack.pop()
 			func_type = self.semantic_stack.pop()
 			func_params = list(reversed(func_params))
+			new_func = SymbolTable(func_id)
 			if func_params != []:
-				self.semantic_stack[-1].addSymbol(func_id,'Function',func_type+':'+str(func_params))
-			else: self.semantic_stack[-1].addSymbol(func_id,'Function',func_type)
-			self.semantic_stack.append(SymbolTable(func_id))
+				self.semantic_stack[-1].addSymbol(func_id,'Function',func_type+':'+str(func_params),new_func)
+			else: self.semantic_stack[-1].addSymbol(func_id,'Function',func_type,_link=new_func)
+			self.semantic_stack.append(new_func)
 			if func_params != []:
-				for i in func_params: ## i is a tuple
+				for i in func_params:
 					if len(i) == 3:
 						self.semantic_stack[-1].addSymbol(i[1],'Parameter',i[0]+i[2])
 					else: self.semantic_stack[-1].addSymbol(i[1],'Parameter',i[0])
