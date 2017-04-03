@@ -27,7 +27,10 @@ class SymbolTable():
 	def printTable(self):
 		print('---',self.name,'---------------------------------------------------')
 		for i in self.symbols:
-			print(i)
+			if i[3] != None:
+				print('|',i[0],'|',i[1],'|',i[2],'|',i[3].name)
+			else:
+				print('|',i[0],'|',i[1],'|',i[2],'|')
 		print('-------------------------------------------------------------------\n')
 
 ## Create rule object

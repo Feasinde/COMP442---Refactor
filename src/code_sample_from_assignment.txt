@@ -31,12 +31,12 @@ class Utility {
 	};
 };
 
-/* class AnotherClass {
+class AnotherClass {
 	int var1;
 	int var2;
 	int var3;
 };
-*/
+
 class YetAnotherClass {
 	int var1;
 	int var2;
@@ -63,6 +63,7 @@ program {
 	arrayUtility[1][1][1][1].var1[4][1][0][0][0][0][0] = 2;
 	put(maxValue);
 	put(minValue);
+
 };
 
 float randomize() {
@@ -70,6 +71,10 @@ float randomize() {
 	value = 100 * (2 + 3.0 / 7.0006);
 	value = 1.05 + ((2.04 * 2.47) - 3.0) + 7.0006 ;
 	return (value);
+};
+
+int newFunction(int param){
+
 };
 
 float emptyFunction(int par1, float par2, Utility par3[10], int var1, int var2, int var3[2][2][2]){};
