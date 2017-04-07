@@ -1,6 +1,6 @@
 import re
 from LexicalAnalyser import Lexer
-from ParseTable import Directive, SymbolTable
+from ParseTable import *
 
 class Parser:
 	## stores all generated symbol tables
@@ -10,12 +10,21 @@ class Parser:
 	## symbol table creation and type chiecking
 	semantic_stack = []
 
+	## holds all terminal symbols
+	terminals = getTerminals()
+
+	## error flag indicates syntax or semantic errors
+	error = False
+
 	def __init__(self, rulz, terminals, parse_table, input_string=''):
 		self._stack = ['$']
 		self._rulz = rulz
 		self._terminals = terminals
 		self._table = parse_table
 		self._input = input_string
+		
+		## holds the source code derivation
+		self.current_derivation = ['prog']
 
 	def _push(self, t):
 		self._stack.append(t)
@@ -49,8 +58,67 @@ class Parser:
 		first = set(first_)
 		for i in self._table[symbol]:
 			first = first.union(self._table[symbol][i]._follow)
-		return first	
-	
+		return first
+
+	## Auxiliary methods that check whether a symbol is
+	## contained in the current or encompassing scopes and
+	## that return the symbol's type
+	def lookUp(self,id):
+		is_id_declared = False
+		for n in range(1,len(self.semantic_stack)+1):
+			if type(self.semantic_stack[-n]) == SymbolTable:
+				if self.semantic_stack[-n].lookUpSymbol(id): return True
+		return is_id_declared
+
+	def getType(self,id):
+		for n in range(1,len(self.semantic_stack)+1):
+			if type(self.semantic_stack[-n]) == SymbolTable:
+				if self.semantic_stack[-n].lookUpSymbol(id): 
+					return self.semantic_stack[-n].getTypeOfSymbol(id)
+		return None
+
+	## Auxiliar method that checks the type validity
+	## of an expression
+	def checkType(self,expression):
+		expr = expression
+		expr_kind = None
+
+		## determine the kind of expression to check: Boolean, arithmetic or invocative
+		if ('>' or '<' or '>=' or '<=' or '==' or '!=' or 'or' or 'and' or 'not') in expr:
+			expr_kind = 'Boolean'
+		elif ('+' or '-' or '*' or '/') in expr:
+			expr_kind = 'arithmetic'
+		else: expr_kind = 'invocative'
+
+		## get the type of all ids by referring to the symtable
+		for token in expr:
+			token_types = []
+			token_type = None
+			# if token == 'id': 
+			# 	print('HOAL')
+			# 	print(self.lookUp(token))
+				
+
+	# def update_derivation(self,rule):
+	# 	## get the left-most non-terminal symbol from
+	# 	## current_derivation
+	# 	symbol_to_derivate = ''
+	# 	terminals_head = []
+
+	# 	## remove semantic directives from rule, which
+	# 	## are unneeded
+	# 	production_no_sem = []
+	# 	for token in rule._production:
+	# 		if type(token) != Directive:
+	# 			production_no_sem.append(token)
+
+	# 	token_index = 0
+	# 	while self.current_derivation[token_index] in self.terminals:
+	# 		terminals_head.append(self.current_derivation[token_index])
+	# 		token_index+= 1
+	# 	symbol_to_derivate = self.current_derivation[token_index]
+	# 	self.current_derivation[token_index+1:]
+
 	## Create and handle symbol tables. Returns truth value
 	## that determines whether parsed tokens are added to
 	## the semstack
@@ -186,10 +254,40 @@ class Parser:
 					else: self.semantic_stack[-1].addSymbol(i[1],'Parameter',i[0])
 			return False
 
+		if directive.name == 'CHECK_DEFINITION':
+			while self.semantic_stack[-1] != Directive.CAPTURE_TYPE:
+				print(self.semantic_stack.pop())
+			print(self.semantic_stack.pop())
+			print(self.semantic_stack[-1])
+			return False
+
+		if directive.name == 'CHECK_EXPRESSION_TYPE':
+			exp_types = []
+			## pop the semstack gathering tokens until reaching
+			## the point where the type checking began
+			while self.semantic_stack[-1] != Directive.CAPTURE_TYPE:
+				exp_types.append(self.semantic_stack.pop())
+			self.semantic_stack.pop()
+			self.checkType(exp_types)
+			exp_types = list(reversed(exp_types))
+			# print(' '.join(exp_types))
+			return False
+
+		if directive.name == 'CHECK_ASSIGNMENT_TYPE':
+			assign_statement = []
+			while self.semantic_stack[-1] != Directive.CAPTURE_TYPE:
+				assign_statement.append(self.semantic_stack.pop())
+				print(' '.join(list(reversed(assign_statement))))
+			self.semantic_stack.pop()
+			return False
+
 		if directive.name == 'POP_SEMANTIC_STACK':
 			self.semantic_stack.pop()
 
 		if directive.name == 'CLOSE_SCOPE':
+			# self.semantic_stack[-1].printTable()
+			# print(self.lookUp('array'))
+			# print(self.getType('array'))
 			self.symbol_tables.append(self.semantic_stack.pop())
 		return False
 
@@ -201,9 +299,6 @@ class Parser:
 		## Initialise tokeniser
 		self._tokeniser = Lexer(self._input)
 
-		## set error flag to False
-		error = False
-
 		## push first production rule into stack
 		self._push(self._rulz[0]._symbol)
 		rule_x = self._rulz[0]
@@ -211,9 +306,8 @@ class Parser:
 		a = token[0]
 		line_errors = []
 
-		## create global symbol table and add to scope
-		## stack and symbol table list
 		capture_token = False
+		capture_token_type = False
 		
 		while self._top() != '$':
 			x = self._top()
@@ -221,6 +315,8 @@ class Parser:
 				if x == a:
 					if capture_token: 
 						self.semantic_stack.append(token[1])
+					if capture_token_type:
+						self.semantic_stack.append(token[0])
 					self._pop()
 					token = self._tokeniser.nextToken()
 					a = token[0]
@@ -236,9 +332,15 @@ class Parser:
 							token = self._tokeniser.nextToken()
 							a = token[0]
 					## End skip error section
-					error = True
+					self.error = True
 			elif x == 'EPSILON': self._pop() # fuck off eps
 			elif type(x) == Directive:
+				if x.name == 'CAPTURE_TYPE':
+					capture_token_type = True
+					self.semantic_stack.append(x)
+					# print('At the moment of pushing the directive, the top of the semstack is',self.semantic_stack[-1])
+				if x.name == ('CHECK_EXPRESSION_TYPE' or 'CHECK_DEFINITION'):
+					capture_token_type = False
 				capture_token = self.handleSymbolTable(x)
 				self._pop()
 
@@ -247,6 +349,7 @@ class Parser:
 					rule_x = self._table[x][a]
 					self._pop()
 					self._inverse_RHS_multiple_push(rule_x)
+					# self.update_derivation(rule_x)
 				except KeyError:
 					line_errors.append(token[2])
 				
@@ -259,11 +362,11 @@ class Parser:
 							a = token[0]
 					## End skip error section
 					
-					error = True
+					self.error = True
 			if print_stack != False: print(self._stack)
-		if a != '$' or error == True:
+		if a != '$' or self.error == True:
 			print('Something went wrong.')
 			print('Syntax error on lines',str(line_errors))
 		else: 
-			self.printSymbolTables()
+			# self.printSymbolTables()
 			print('EVERYTHING IS AWESOME')

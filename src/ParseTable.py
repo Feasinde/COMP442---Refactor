@@ -11,6 +11,10 @@ class Directive(Enum):
 	CAPTURE_TOKEN = 8
 	CAPTURE_DIMENSIONALITY = 11
 	POP_SEMANTIC_STACK = 12
+	CAPTURE_TYPE = 13
+	CHECK_EXPRESSION_TYPE = 14
+	CHECK_ASSIGNMENT_TYPE = 15
+	CHECK_DEFINITION = 16
 
 ## Create SymbolTable class
 
@@ -32,6 +36,20 @@ class SymbolTable():
 			else:
 				print('|',i[0],'|',i[1],'|',i[2],'|')
 		print('-------------------------------------------------------------------\n')
+	def lookUpSymbol(self,id):
+		for i in self.symbols:
+			if id == i[0]: return True
+		return False
+	
+	def getTypeOfSymbol(self,id):
+		for i in self.symbols:
+			if id == i[0]: return i[2]
+		return None
+	
+	def getKindOfSymbol(self,id):
+		for i in self.symbols:
+			if id == i[0]: return i[1]
+		return None
 
 ## Create rule object
 
