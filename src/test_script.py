@@ -17,7 +17,8 @@ terminals = getTerminals()
 	
 
 parser = Parser(rulz, terminals, parse_table, input_string)
-parser._parse(print_stack=False,print_derivation=True,print_symtables=False)
+parser._parse(False)
+parser._parse(print_stack=False,print_derivation=False,print_symtables=True,second_pass=True)
 
 # table = SymbolTable('table')
 # table.addSymbol('f1', 'function', ['float','int[2][2]', 'float'])

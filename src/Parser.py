@@ -15,6 +15,7 @@ class Parser:
 
 	## error flag indicates syntax or semantic errors
 	error = False
+	_second_pass = False
 
 	def __init__(self, rulz, terminals, parse_table, input_string=''):
 		self._stack = ['$']
@@ -68,6 +69,12 @@ class Parser:
 		for n in range(1,len(self.semantic_stack)+1):
 			if type(self.semantic_stack[-n]) == SymbolTable:
 				if self.semantic_stack[-n].lookUpSymbol(id): return True
+		return is_id_declared
+
+	def lookUpTables(self,id):
+		is_id_declared = False
+		for i in self.symbol_tables:
+			is_id_declared = i.lookUpSymbol(id)
 		return is_id_declared
 
 	def getType(self,id):
@@ -270,7 +277,7 @@ class Parser:
 			if self.semantic_stack[-1] == '.':
 				self.semantic_stack.pop()
 				scope_id = self.semantic_stack[-1]
-				print(scope_id)
+				# print(scope_id)
 				scoped = self.lookUp(scope_id)
 
 			if not self.lookUp(id) and scoped == False:
@@ -303,8 +310,8 @@ class Parser:
 
 		if directive.name == 'CLOSE_SCOPE':
 			# self.semantic_stack[-1].printTable()
-			# print(self.lookUp('var1'))
-			# print(self.getType('var1'))
+			# print(self.lookUp('randomize'))
+			# print(self.getType('randomize'))
 			self.symbol_tables.append(self.semantic_stack.pop())
 		return False
 
@@ -312,7 +319,10 @@ class Parser:
 		for i in range(len(self.symbol_tables)):
 			self.symbol_tables[-1-i].printTable(output_file=output_file)
 
-	def _parse(self,print_stack=False,print_derivation=False,print_symtables=False,op_file=None):
+	def _parse(self,second_pass=False,print_stack=False,print_derivation=False,print_symtables=False,op_file=None):
+		if second_pass:
+			self._second_pass = True
+		# print(self.lookUpTables('randomize'))
 		## Initialise tokeniser
 		self._tokeniser = Lexer(self._input)
 
@@ -395,6 +405,7 @@ class Parser:
 			if line_errors != []:
 				print('Syntax error on lines',str(line_errors))
 		else: 
-			if print_symtables:
+			if print_symtables and self._second_pass:
 				self.printSymbolTables(output_file=op_file)
-			print('EVERYTHING IS AWESOME')
+			if self._second_pass:
+				print('EVERYTHING IS AWESOME')

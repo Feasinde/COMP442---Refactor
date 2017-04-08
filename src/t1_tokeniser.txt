@@ -1,0 +1,40 @@
+//identifiers begin with a letter but may be followed 
+//by digits and underscores
+hola
+mundo2
+_bonjour_le_monde3
+
+//whitespace is skipped
+the world is square
+
+//Reserved words are marked as such
+if roses are red then violets are blue
+/* comment blocks are ignored by the lexer */
+// comment lines are also ignored
+12
+54.21
+0.342
+//leading zeroes are not included in a token
+0001
+1.0
+
+//trailing zeroes are not included in a token
+1.0000
+0.0
+0.
+.0
+.334200
+.003
+0.00300
+< <> >< <= === >==
+
+//invalid tokens are broken down into valid characters and tokens
+1.bad_t0ken
+1i2..452
+
+//Illegal characters are skipped and added to the error log
+$%^&#
+
+//If illegal characters are found next to valid characters or tokens, they
+//are skipped but the valid character and token are still returned
+valid$token???

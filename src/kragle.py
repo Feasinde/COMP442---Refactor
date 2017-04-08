@@ -38,6 +38,7 @@ else: tokenise = False
 if tokenise:
 	tokeniser = Lexer(input_string)
 	token = tokeniser.nextToken()
+	print('hoal')
 	while token[0] != '$':
 		if output:
 			with open(args.output,'a') as op:
@@ -72,7 +73,9 @@ if parse:
 	parser = Parser(rulz, terminals, parse_table, input_string)
 	if output:
 		op = open(args.output,'w')
-		parser._parse(print_stack=output_stack,print_derivation=output_derivation,print_symtables=output_tables,op_file=op)
+		# parser._parse(print_stack=False,print_derivation=False,print_symtables=False,op_file=op)
+		parser._parse(print_stack=output_stack,print_derivation=output_derivation,print_symtables=output_tables,op_file=op,second_pass=True)
 		op.close
 	else:
-		parser._parse(print_stack=output_stack,print_derivation=output_derivation,print_symtables=output_tables)
+		# parser._parse(print_stack=False,print_derivation=False,print_symtables=False)
+		parser._parse(print_stack=output_stack,print_derivation=output_derivation,print_symtables=output_tables,second_pass=True)
