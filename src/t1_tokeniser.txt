@@ -33,8 +33,8 @@ if roses are red then violets are blue
 1i2..452
 
 //Illegal characters are skipped and added to the error log
-$%^&#
+//$%^&#
 
 //If illegal characters are found next to valid characters or tokens, they
 //are skipped but the valid character and token are still returned
-valid$token???
+//valid$token???

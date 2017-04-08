@@ -38,7 +38,6 @@ else: tokenise = False
 if tokenise:
 	tokeniser = Lexer(input_string)
 	token = tokeniser.nextToken()
-	print('hoal')
 	while token[0] != '$':
 		if output:
 			with open(args.output,'a') as op:
