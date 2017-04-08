@@ -99,25 +99,24 @@ class Parser:
 			# 	print(self.lookUp(token))
 				
 
-	# def update_derivation(self,rule):
-	# 	## get the left-most non-terminal symbol from
-	# 	## current_derivation
-	# 	symbol_to_derivate = ''
-	# 	terminals_head = []
+	def update_derivation(self,rule):
+		symbol_to_derivate = ''
+		terminals_head = []
 
-	# 	## remove semantic directives from rule, which
-	# 	## are unneeded
-	# 	production_no_sem = []
-	# 	for token in rule._production:
-	# 		if type(token) != Directive:
-	# 			production_no_sem.append(token)
+		## remove semantic directives from rule, which
+		## are unneeded
+		production_no_sem = []
+		for token in rule._production:
+			if type(token) != Directive:
+				production_no_sem.append(token)
 
-	# 	token_index = 0
-	# 	while self.current_derivation[token_index] in self.terminals:
-	# 		terminals_head.append(self.current_derivation[token_index])
-	# 		token_index+= 1
-	# 	symbol_to_derivate = self.current_derivation[token_index]
-	# 	self.current_derivation[token_index+1:]
+		token_index = 0
+		while self.current_derivation[token_index] in self.terminals:
+			terminals_head.append(self.current_derivation[token_index])
+			token_index+= 1
+		symbol_to_derivate = self.current_derivation[token_index]
+		production_tail = self.current_derivation[token_index+1:]
+		self.current_derivation = terminals_head + production_no_sem + production_tail
 
 	## Create and handle symbol tables. Returns truth value
 	## that determines whether parsed tokens are added to
@@ -309,11 +308,11 @@ class Parser:
 			self.symbol_tables.append(self.semantic_stack.pop())
 		return False
 
-	def printSymbolTables(self):
+	def printSymbolTables(self,output_file):
 		for i in range(len(self.symbol_tables)):
-			self.symbol_tables[-1-i].printTable()
+			self.symbol_tables[-1-i].printTable(output_file=output_file)
 
-	def _parse(self,print_stack=False):
+	def _parse(self,print_stack=False,print_derivation=False,print_symtables=False,op_file=None):
 		## Initialise tokeniser
 		self._tokeniser = Lexer(self._input)
 
@@ -367,7 +366,12 @@ class Parser:
 					rule_x = self._table[x][a]
 					self._pop()
 					self._inverse_RHS_multiple_push(rule_x)
-					# self.update_derivation(rule_x)
+					self.update_derivation(rule_x)
+					if print_derivation:
+						if op_file != None:
+							op_file.write(''.join(self.current_derivation)+'\n')
+						else:
+							print(''.join(self.current_derivation))
 				except KeyError:
 					line_errors.append(token[2])
 				
@@ -381,11 +385,16 @@ class Parser:
 					## End skip error section
 					
 					self.error = True
-			if print_stack != False: print(self._stack)
+			if print_stack != False: 
+				if op_file != None:
+					op_file.write(str(self._stack)+'\n')
+				else:
+					print(self._stack)
 		if a != '$' or self.error == True:
 			print('Something went wrong.')
 			if line_errors != []:
 				print('Syntax error on lines',str(line_errors))
 		else: 
-			# self.printSymbolTables()
+			if print_symtables:
+				self.printSymbolTables(output_file=op_file)
 			print('EVERYTHING IS AWESOME')

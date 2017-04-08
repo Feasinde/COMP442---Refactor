@@ -2,7 +2,7 @@ from LexicalAnalyser import Lexer
 from ParseTable import *
 from Parser import Parser
 
-with open('code_sample_from_assignment.txt') as file:
+with open('code_sample.txt') as file:
 	input_string = file.read()
 
 # tokeniser = Lexer(input_string)
@@ -17,7 +17,7 @@ terminals = getTerminals()
 	
 
 parser = Parser(rulz, terminals, parse_table, input_string)
-parser._parse(print_stack=False)
+parser._parse(print_stack=False,print_derivation=True,print_symtables=False)
 
 # table = SymbolTable('table')
 # table.addSymbol('f1', 'function', ['float','int[2][2]', 'float'])

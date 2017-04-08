@@ -28,14 +28,24 @@ class SymbolTable():
 	def addSymbol(self,_name,_kind,_type=None,_link=None):
 		self.symbols.append([_name, _kind, _type, _link])
 
-	def printTable(self):
-		print('---',self.name,'---------------------------------------------------')
-		for i in self.symbols:
-			if i[3] != None:
-				print('|',i[0],'|',i[1],'|',i[2],'|',i[3].name)
-			else:
-				print('|',i[0],'|',i[1],'|',i[2],'|')
-		print('-------------------------------------------------------------------\n')
+	def printTable(self,output_file=None):
+		if output_file == None:
+			print('---',self.name,'---------------------------------------------------')
+			for i in self.symbols:
+				if i[3] != None:
+					print('|',i[0],'|',i[1],'|',i[2],'|',i[3].name)
+				else:
+					print('|',i[0],'|',i[1],'|',i[2],'|')
+			print('-------------------------------------------------------------------\n')
+		else:
+			output_file.write('---'+self.name+'---------------------------------------------------\n')
+			for i in self.symbols:
+				if i[3] != None:
+					output_file.write('| '+str(i[0])+' | '+str(i[1])+' | '+str(i[2])+' | '+str(i[3].name)+'\n')
+				else:
+					output_file.write(' | '+str(i[0])+' | '+str(i[1])+' | '+str(i[2])+' |\n')
+			output_file.write('-------------------------------------------------------------------\n\n')
+	
 	def lookUpSymbol(self,id):
 		for i in self.symbols:
 			if id == i[0]: return True
