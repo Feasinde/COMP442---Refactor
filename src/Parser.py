@@ -255,10 +255,28 @@ class Parser:
 			return False
 
 		if directive.name == 'CHECK_DEFINITION':
+			id = ''
+			scope = ''
+			scoped = False
+			while scope == '':
+				n = len(self.semantic_stack)
+				for i in range(1,n):
+					if type(self.semantic_stack[-i]) == SymbolTable:
+						scope = self.semantic_stack[-i].name
+					n -= 1
+			
 			while self.semantic_stack[-1] != Directive.CAPTURE_TYPE:
-				print(self.semantic_stack.pop())
-			print(self.semantic_stack.pop())
-			print(self.semantic_stack[-1])
+				id = self.semantic_stack.pop()
+			self.semantic_stack.pop()
+			if self.semantic_stack[-1] == '.':
+				self.semantic_stack.pop()
+				scope_id = self.semantic_stack[-1]
+				print(scope_id)
+				scoped = self.lookUp(scope_id)
+
+			if not self.lookUp(id) and scoped == False:
+				self.error = True
+				print("Undefined identifier '"+id+"' in scope '"+scope+"'")
 			return False
 
 		if directive.name == 'CHECK_EXPRESSION_TYPE':
@@ -286,8 +304,8 @@ class Parser:
 
 		if directive.name == 'CLOSE_SCOPE':
 			# self.semantic_stack[-1].printTable()
-			# print(self.lookUp('array'))
-			# print(self.getType('array'))
+			# print(self.lookUp('var1'))
+			# print(self.getType('var1'))
 			self.symbol_tables.append(self.semantic_stack.pop())
 		return False
 
@@ -316,7 +334,7 @@ class Parser:
 					if capture_token: 
 						self.semantic_stack.append(token[1])
 					if capture_token_type:
-						self.semantic_stack.append(token[0])
+						self.semantic_stack.append(token[1])
 					self._pop()
 					token = self._tokeniser.nextToken()
 					a = token[0]
@@ -339,7 +357,7 @@ class Parser:
 					capture_token_type = True
 					self.semantic_stack.append(x)
 					# print('At the moment of pushing the directive, the top of the semstack is',self.semantic_stack[-1])
-				if x.name == ('CHECK_EXPRESSION_TYPE' or 'CHECK_DEFINITION'):
+				if x.name == 'CHECK_DEFINITION':
 					capture_token_type = False
 				capture_token = self.handleSymbolTable(x)
 				self._pop()
@@ -366,7 +384,8 @@ class Parser:
 			if print_stack != False: print(self._stack)
 		if a != '$' or self.error == True:
 			print('Something went wrong.')
-			print('Syntax error on lines',str(line_errors))
+			if line_errors != []:
+				print('Syntax error on lines',str(line_errors))
 		else: 
 			# self.printSymbolTables()
 			print('EVERYTHING IS AWESOME')

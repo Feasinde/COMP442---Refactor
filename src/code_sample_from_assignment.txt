@@ -27,6 +27,7 @@ class Utility {
 	int findMin(int array[100]){
 		int minValue;
 		int idx;
+		int maxValue;
 		minValue = array[100];
 		for( int idx = 1; idx <= 99; idx = ( idx ) + 1) {
 			if(array[idx] < maxValue) then {
@@ -60,6 +61,7 @@ program {
 	int minValue;
 	Utility utility;
 	idx = 3;
+	int t;
 	YetAnotherClass dummy_variable;
 	Utility arrayUtility[2][3][6][7];
 	for(int t = 0; t<=100 ; t = t + 1) {
@@ -69,7 +71,10 @@ program {
 	/* comment */
 	maxValue = utility.findMax(sample);
 	minValue = utility.findMin(sample); // moar comments
-	/* SUPER DUPER MEGA COMMENT BLOCK IN UR BASE KILLING UR TOKENZ*/
+	/* SUPER DUPER MEGA COMMENT BLOCK 
+
+
+	IN UR BASE KILLING UR TOKENZ*/
 	utility.var1[4][1][0][0][0][0][0] = 10;
 	arrayUtility[1][1][1][1].var1[4][1][0][0][0][0][0] = 2;
 	put(maxValue);
